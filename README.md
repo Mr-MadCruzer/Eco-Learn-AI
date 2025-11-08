@@ -76,3 +76,72 @@ Most people *want* to live sustainably, but they:
 >└── /user/{id} → User profile data
 
 
+---
+
+## 🛰️ Datasets (ASDI)
+
+| Dataset | Source | Use |
+|----------|---------|-----|
+| **NASA NEX-GDDP CMIP6** | ASDI | India’s historical temperature trend |
+| **NASA Carbon Monitoring System (CMS)** | ASDI | National CO₂ emission data |
+| **MODIS NDVI** | ASDI | Forest & vegetation cover |
+| **World Bank Climate Indicators** | ASDI | Socioeconomic overlays |
+
+---
+
+## 🧩 Modules
+
+### 1️⃣ **AI Climate Tutor**
+Ask a question → Get a short, clear explanation + one actionable step.  
+Supports Hindi and English.
+
+**Example:**
+> *Q:* “What is global warming?”  
+> *A:* “Global warming means Earth is heating due to pollution. You can help by using less electricity and planting trees.”
+
+---
+
+### 2️⃣ **Data Visualization**
+Shows real climate data from ASDI with clean, responsive charts:
+- Line chart: India’s Avg Temperature (1970–2023)
+- Bar chart: Annual CO₂ emissions
+- Donut chart: User CO₂ distribution
+
+---
+
+### 3️⃣ **Eco-Missions**
+Daily action challenges with measurable CO₂ savings.
+
+| Example | CO₂ Saved | Points |
+|----------|------------|--------|
+| Use fan instead of AC for 1 hr | 0.2 kg | +5 |
+| Plant a sapling | 22.0 kg | +50 |
+| Switch off lights for 2 hrs | 0.15 kg | +3 |
+
+Each mission completed = confetti 🎉 + EcoPoints 🏅
+
+---
+
+### 4️⃣ **🌿 Daily Green Routine Tracker (NEW)**
+
+Log your daily activity → get instant CO₂ feedback and eco-tips.
+
+**Example:**
+> “I drove my petrol car 3 km to office.”  
+> 🚗 Emitted **0.7 kg CO₂** (Harmful)  
+> ✅ Tip: Walk or cycle — 0 CO₂, better health, less traffic.  
+> 🌱 Benefit: Save ~250 kg CO₂ yearly + ₹5,000 in fuel.
+
+**Backend Response Example:**
+```json
+{
+  "co2_estimate": 0.7,
+  "impact_level": "harmful",
+  "tips": ["Walk or cycle short trips", "Use EV or public transport"],
+  "benefits": ["Zero CO₂", "Improved fitness", "Saves money"]
+}
+---
+
+
+
+

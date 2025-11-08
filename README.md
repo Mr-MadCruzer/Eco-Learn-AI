@@ -64,13 +64,15 @@ Most people *want* to live sustainably, but they:
 ## 🧠 Architecture
 
 
-React Frontend
-↓
-FastAPI Backend (Python)
-↓
-├── /explain → AI Tutor (GPT)
-├── /data/india/temp → ASDI dataset visualization
-├── /missions → Eco-missions list
-├── /complete → Track EcoPoints
-├── /analyze → Daily Routine Tracker (CO₂ & eco-tips)
-└── /user/{id} → User profile data
+> **React Frontend**
+> ↓
+>FastAPI Backend (Python)
+>↓
+>├── /explain → AI Tutor (GPT)
+>├── /data/india/temp → ASDI dataset visualization
+>├── /missions → Eco-missions list
+>├── /complete → Track EcoPoints
+>├── /analyze → Daily Routine Tracker (CO₂ & eco-tips)
+>└── /user/{id} → User profile data
+
+

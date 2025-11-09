@@ -10,9 +10,10 @@ import { useToast } from '@/hooks/use-toast';
 interface MissionCardProps {
   mission: Mission;
   onComplete: (missionId: number) => void;
+  disabled?: boolean;
 }
 
-export const MissionCard = ({ mission, onComplete }: MissionCardProps) => {
+export const MissionCard = ({ mission, onComplete, disabled }: MissionCardProps) => {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [showConfetti, setShowConfetti] = useState(false);
@@ -60,7 +61,7 @@ export const MissionCard = ({ mission, onComplete }: MissionCardProps) => {
           <Button
             size="sm"
             onClick={handleComplete}
-            disabled={mission.completed}
+            disabled={mission.completed || disabled}
             className={mission.completed ? 'bg-success' : ''}
           >
             {mission.completed ? (

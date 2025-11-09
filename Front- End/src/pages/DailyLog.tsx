@@ -6,12 +6,23 @@ import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { activityAnalysis } from '@/data/mockData';
 import { useToast } from '@/hooks/use-toast';
+import { carbonAPI } from '@/services/api';
+
+type DailyLogAnalysis = {
+  co2_estimate: number;
+  impact_level: 'green' | 'moderate' | 'harmful';
+  feedback: string;
+  tips: string[];
+  tipsHi: string[];
+  benefits: string[];
+  benefitsHi: string[];
+};
 
 const DailyLog = () => {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [activity, setActivity] = useState('');
-  const [analysis, setAnalysis] = useState<any>(null);
+  const [analysis, setAnalysis] = useState<DailyLogAnalysis | null>(null);
   const [loading, setLoading] = useState(false);
 
   const presets = [
@@ -21,12 +32,47 @@ const DailyLog = () => {
     { key: 'ac', label: t('dailyLog.presets.ac') },
   ];
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
     if (!activity.trim()) return;
     
     setLoading(true);
     
-    setTimeout(() => {
+    try {
+      const result = await carbonAPI.analyzeLog({
+        text: activity,
+        lang: i18n.language,
+      });
+
+      const threatToImpact: Record<string, 'green' | 'moderate' | 'harmful'> = {
+        Low: 'green',
+        Moderate: 'moderate',
+        High: 'harmful',
+        Severe: 'harmful',
+      };
+
+      const impact =
+        threatToImpact[result?.analysis?.threat as string] ?? 'moderate';
+
+      const coachTips: string[] =
+        (Array.isArray(result?.tips) ? result.tips : []) ||
+        result?.analysis?.advice?.slice(0, 3) ||
+        [];
+
+      const transformedResult = {
+        co2_estimate: result?.analysis?.total_kg ?? 0,
+        impact_level: impact,
+        feedback: result?.feedback ?? '',
+        tips: coachTips,
+        tipsHi: coachTips,
+        benefits: ['Reduced carbon footprint', 'Cost savings', 'Environmental impact'],
+        benefitsHi: ['कम कार्बन फुटप्रिंट', 'लागत बचत', 'पर्यावरणीय प्रभाव']
+      };
+      
+      setAnalysis(transformedResult);
+    } catch (error) {
+      console.error('Error analyzing activity:', error);
+      
+      // Fallback to mock data if backend fails
       const lowerActivity = activity.toLowerCase();
       let result = activityAnalysis.car;
       
@@ -38,9 +84,26 @@ const DailyLog = () => {
         result = activityAnalysis.ac;
       }
       
-      setAnalysis(result);
+      setAnalysis({
+        co2_estimate: result.co2_estimate,
+        impact_level: result.impact_level,
+        feedback: i18n.language === 'hi'
+          ? 'ऑफ़लाइन मोड: हम सामान्य मार्गदर्शन साझा कर रहे हैं।'
+          : 'Offline mode: showing general guidance.',
+        tips: i18n.language === 'hi' ? result.tipsHi : result.tips,
+        tipsHi: result.tipsHi,
+        benefits: result.benefits,
+        benefitsHi: result.benefitsHi,
+      });
+      
+      toast({
+        title: 'Connection Issue',
+        description: 'Using offline analysis. Backend may be unavailable.',
+        variant: 'destructive',
+      });
+    } finally {
       setLoading(false);
-    }, 800);
+    }
   };
 
   const handleAddToLog = () => {
@@ -110,6 +173,11 @@ const DailyLog = () => {
               <div className={`inline-block px-4 py-2 rounded-full border ${impactColors[analysis.impact_level]}`}>
                 <span className="text-sm font-semibold capitalize">{t('dailyLog.results.impact')}: {analysis.impact_level}</span>
               </div>
+              {analysis.feedback && (
+                <p className="mt-3 text-sm text-muted-foreground italic">
+                  {analysis.feedback}
+                </p>
+              )}
             </div>
 
             <div>

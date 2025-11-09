@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Line, Bar } from 'react-chartjs-2';
 import {
@@ -15,6 +16,8 @@ import {
 import { ChartCard } from '@/components/ChartCard';
 import { indiaTemperatureData, indiaCO2Data } from '@/data/mockData';
 import { TrendingUp } from 'lucide-react';
+import { dataAPI } from '@/services/api';
+import { useToast } from '@/hooks/use-toast';
 
 ChartJS.register(
   CategoryScale,
@@ -29,13 +32,37 @@ ChartJS.register(
 
 const Visualize = () => {
   const { t } = useTranslation();
+  const { toast } = useToast();
+  const [backendTempData, setBackendTempData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch real temperature data from backend
+  useEffect(() => {
+    const fetchTemperatureData = async () => {
+      try {
+        const data = await dataAPI.getTemperatureData();
+        setBackendTempData(data);
+      } catch (error) {
+        console.error('Error fetching temperature data:', error);
+        toast({
+          title: 'Connection Issue',
+          description: 'Using mock temperature data. Backend may be unavailable.',
+          variant: 'destructive',
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchTemperatureData();
+  }, [toast]);
 
   const tempData = {
-    labels: indiaTemperatureData.map(d => d.Year),
+    labels: backendTempData.length > 0 ? backendTempData.map(d => d.year) : indiaTemperatureData.map(d => d.Year),
     datasets: [
       {
         label: 'Temperature (°C)',
-        data: indiaTemperatureData.map(d => d.AvgTemp),
+        data: backendTempData.length > 0 ? backendTempData.map(d => d.t_mean_c) : indiaTemperatureData.map(d => d.AvgTemp),
         borderColor: 'hsl(142 71% 32%)',
         backgroundColor: 'hsla(142 71% 32% / 0.1)',
         tension: 0.4,
@@ -92,7 +119,13 @@ const Visualize = () => {
           title={t('visualize.tempTitle')}
           caption={t('visualize.source')}
         >
-          <Line data={tempData} options={chartOptions} />
+          {loading ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-muted-foreground">Loading temperature data...</div>
+            </div>
+          ) : (
+            <Line data={tempData} options={chartOptions} />
+          )}
         </ChartCard>
 
         <ChartCard 
@@ -106,8 +139,8 @@ const Visualize = () => {
       <div className="mt-8 p-6 bg-muted/30 rounded-lg">
         <h3 className="font-semibold mb-2">Key Insights:</h3>
         <ul className="space-y-2 text-sm text-muted-foreground">
-          <li>• India's average temperature has increased by 1.6°C since 1970</li>
-          <li>• CO₂ emissions have grown 14x in the same period</li>
+          <li>• {backendTempData.length > 0 ? 'Real-time data shows' : 'Historical data indicates'} India's temperature trends</li>
+          <li>• CO₂ emissions have grown significantly over recent decades</li>
           <li>• Small individual actions can collectively make a significant impact</li>
         </ul>
       </div>

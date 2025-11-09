@@ -4,33 +4,50 @@ import { Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { aiResponses } from '@/data/mockData';
+import { agentAPI } from '@/services/api';
+import { useToast } from '@/hooks/use-toast';
 
 const Learn = () => {
   const { t, i18n } = useTranslation();
   const [prompt, setPrompt] = useState('');
-  const [response, setResponse] = useState('');
+  const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([]);
   const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
 
   const handleAsk = async () => {
     if (!prompt.trim()) return;
     
     setLoading(true);
+    const userText = prompt.trim();
+    setMessages((prev) => [...prev, { role: 'user', content: userText }]);
     
-    // Simulate API call with mock data
-    setTimeout(() => {
-      const lowerPrompt = prompt.toLowerCase();
-      let answer = aiResponses.default;
-      
-      if (lowerPrompt.includes('warming') || lowerPrompt.includes('वार्मिंग')) {
-        answer = aiResponses['global warming'];
-      } else if (lowerPrompt.includes('heat') || lowerPrompt.includes('लू')) {
-        answer = aiResponses.heatwave;
-      }
-      
-      setResponse(i18n.language === 'hi' ? answer.hi : answer.en);
+    try {
+      // Call the backend agent (chat-style reply)
+      const result = await agentAPI.sendTask(userText, { lang: i18n.language });
+      const reply = result.reply || result.answer || 'Sorry, I could not generate a reply.';
+      setMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
+    } catch (error) {
+      console.error('Error getting AI response:', error);
+      // Graceful fallback
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          content:
+            i18n.language === 'hi'
+              ? 'कनेक्शन में समस्या है। कृपया बाद में पुनः प्रयास करें।'
+              : 'There was a connection issue. Please try again later.',
+        },
+      ]);
+
+      toast({
+        title: 'Connection Issue',
+        description: 'Using offline responses. Backend may be unavailable.',
+        variant: 'destructive',
+      });
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -62,19 +79,29 @@ const Learn = () => {
         </div>
       </Card>
 
-      {response && (
-        <Card className="p-6 bg-gradient-to-br from-primary/5 to-success/5 border-primary/20 animate-in fade-in slide-in-from-bottom-4">
-          <div className="flex gap-3">
-            <div className="flex-shrink-0">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <Sparkles className="h-5 w-5 text-primary" />
+      {messages.length > 0 && (
+        <Card className="p-6 space-y-4">
+          {messages.map((m, idx) => (
+            <div key={idx} className="flex gap-3">
+              <div className="flex-shrink-0">
+                <div
+                  className={
+                    m.role === 'assistant'
+                      ? 'w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center'
+                      : 'w-10 h-10 rounded-full bg-muted flex items-center justify-center'
+                  }
+                >
+                  <Sparkles className={m.role === 'assistant' ? 'h-5 w-5 text-primary' : 'h-5 w-5 text-muted-foreground'} />
+                </div>
+              </div>
+              <div className="flex-1">
+                <div className="text-xs font-semibold mb-1 text-muted-foreground">
+                  {m.role === 'assistant' ? 'AI' : 'You'}
+                </div>
+                <p className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">{m.content}</p>
               </div>
             </div>
-            <div className="flex-1">
-              <h3 className="font-semibold mb-2 text-primary">AI Response</h3>
-              <p className="text-sm leading-relaxed text-foreground">{response}</p>
-            </div>
-          </div>
+          ))}
         </Card>
       )}
 

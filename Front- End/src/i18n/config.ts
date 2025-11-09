@@ -41,10 +41,11 @@ const resources = {
       missions: {
         title: 'Daily Eco-Missions',
         subtitle: 'Complete missions to earn EcoPoints',
-        markDone: 'Mark Done',
+        markDone: 'Mark as Done',
         completed: 'Completed!',
-        points: 'points',
-        co2: 'CO₂ saved',
+        points: 'Points',
+        co2: 'CO₂ Saved',
+        regenerate: 'Regenerate',
       },
       dailyLog: {
         title: 'Daily Green Routine Tracker',
@@ -134,6 +135,7 @@ const resources = {
         completed: 'पूर्ण हुआ!',
         points: 'अंक',
         co2: 'CO₂ बचाया',
+        regenerate: 'पुनः उत्पन्न करें',
       },
       dailyLog: {
         title: 'दैनिक हरित दिनचर्या ट्रैकर',

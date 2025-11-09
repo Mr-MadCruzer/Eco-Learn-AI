@@ -1,0 +1,10 @@
+.env
+*.env
+*.pem
+*.pfx
+*.key
+*.crt
+.venv/
+__pycache__/
+*.pyc
+.vscode/
